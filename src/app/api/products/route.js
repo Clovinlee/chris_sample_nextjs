@@ -10,7 +10,7 @@ export async function POST(request) {
         const product = new Product({name: body.name, stock: body.stock, description: body.description, image: body.imageUrl});
         
         await product.save();
-        return NextResponse.json(product, { status: 200 });
+        return NextResponse.json(product, { status: 201 });
     }catch(err){
         console.log(err);
         return NextResponse.json({error:err}, { status: 500 });
