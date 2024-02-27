@@ -11,7 +11,7 @@ import { redirect } from 'next/navigation';
 import {emailRules, requiredRules, lengthRules, confirmRules} from "@/utils/rules/index";
 import { register } from "@/controllers/authController";
 import { useRouter } from 'next/navigation'
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 export default function page() {
 
@@ -124,6 +124,11 @@ export default function page() {
         let registerResponse = await register(formValue, setFormError);
 
         if(registerResponse){
+            await signIn("credentials",{
+                redirect: false,
+                email: formValue.email,
+                password: formValue.password
+            });
             //supposedly save to state
             // const user = "" // TODO : Register (2)
             redirectPopup();

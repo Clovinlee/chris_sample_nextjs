@@ -11,9 +11,9 @@ const userSchema = new Schema({
         unique: true,
         required: true
     },
-    roles: {
-        type: [String],
-        default: [] // Default value if roles are not provided
+    role: {
+        type: String,
+        default: "user", // Default value if roles are not provided
     },
     password: {
         type: String,

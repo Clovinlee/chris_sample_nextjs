@@ -2,13 +2,15 @@ import { NextResponse } from 'next/server'
 import { getToken } from "next-auth/jwt";
 
 const rolePath = {
-  "/dashboard":["admin", "superadmin"],
-  "/api":["user"]
+  "/inventory":["admin", "superadmin"],
+  "/dashboard":["user", "admin", "superadmin"],
+  "/api/register": ["guest"],
+  "/api":["user","admin","superadmin"],
 }
 
 export async function middleware(request) {
   // console.log("Middleware Request : ",request)
-  const userToken = await getToken({req:request,secret:process.env.JWT_SECRET}) // this get user token!
+  const userToken = await getToken({req:request, secret:process.env.NEXTAUTH_SECRET}) // this get user token!
   // ^^^^
   // Middleware Token : {
   //   name: 'chrisanto sinatra',
@@ -21,11 +23,35 @@ export async function middleware(request) {
   //   jti: 'e517eb1c-549b-4f00-812e-6ebd148fbb70'
   // }
 
-  const pathName = (new URL(request.url).pathname).split("/");
+  const pathName = (new URL(request.url).pathname)
+  const userRole = userToken?.role || "guest";
 
-  const userRoles = userToken?.roles || [];
 
-  return NextResponse.next()
+  let rp = "" // path target as key in rolePath
+  for(let rpath of Object.keys(rolePath)){
+    if(pathName.includes(rpath)){
+        rp = rpath
+        break;
+    }
+  }
+
+  if(rp == ""){
+    return NextResponse.next();
+  }
+
+  const isAuthorized = rolePath[rp].includes("guest") || rolePath[rp].includes(userRole)
+
+  if(isAuthorized){
+    return NextResponse.next();
+  }else{
+    if(pathName.includes("/api")){
+      // API Unauthorized middleware access
+      return NextResponse.json({ error: "Unauthorized Access" }, { status: 401 });
+    }else{
+      // Page unauthorized middleware redirect
+      return NextResponse.redirect(process.env.NEXTAUTH_URL+"/login");
+    }
+  }
 }
 
 export const config = {
@@ -37,6 +63,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth/*|_next/static|_next/image|favicon.ico).*)',
   ],
 }

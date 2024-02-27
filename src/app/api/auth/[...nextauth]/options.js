@@ -79,7 +79,7 @@ const options = {
             // name: 'alan',
             // email: 'a@g.co',
             // password: '$2b$10$7/HWWEJfG/Nxh2ICaNcJMOLKV75pApmT4ooNIGIDJVpTXN3pdWFV6',
-            // roles: [ 'user' ],
+            // role: 'user',
             // __v: 0
             // }
 
@@ -101,7 +101,7 @@ const options = {
 
             if(user){
                 token.uid = user.id
-                token.roles = user.roles;
+                token.role = user.role;
             }
 
             return token;
@@ -112,7 +112,7 @@ const options = {
             // user always return undefined..
 
             if(session){
-                session.user.roles = token.roles;
+                session.user.role = token.role;
             }
           
             return session;
