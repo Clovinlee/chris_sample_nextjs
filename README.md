@@ -5,7 +5,7 @@ This project is made using **nextJS** as the web framework with **mongoose and m
 The project feature includes :
 - User Auth
 - CRUD
-- Test *(soon to be implemented)*
+- Test 
 - CI/CD *(soon to be implemented)*
 
 
