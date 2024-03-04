@@ -9,6 +9,8 @@ describe("Product API Testing", () => {
         "image": "https://www.test.com/test.jpg",
     };
 
+    const timeoutLimit = 15000;
+
     test("success fetch All | statusCode 200", async() => {
         const fetchAllUrl = process.env.NEXT_PUBLIC_PRODUCT_API_URL + "/all";
         const response = await fetch(fetchAllUrl,{
@@ -21,7 +23,7 @@ describe("Product API Testing", () => {
 
 
         expect(response.status).toBe(200);
-    });
+    }, timeoutLimit);
 
     test("success fetch certain product | statusCode 200", async() => {
         const fetchUrl = process.env.NEXT_PUBLIC_PRODUCT_API_URL + "/"+searchProduct;
@@ -35,7 +37,7 @@ describe("Product API Testing", () => {
 
         expect(response.status).toBe(200);
 
-    });
+    }, timeoutLimit);
 
     test("failed fetch certain product invalid ID / bad ID format", async() => {
         const fetchUrl = process.env.NEXT_PUBLIC_PRODUCT_API_URL + "/"+"randomID";
@@ -49,7 +51,7 @@ describe("Product API Testing", () => {
 
         expect(response.status).toBe(400);
 
-    });
+    }, timeoutLimit);
 
     test("Unauthorized fetch | statusCode 401", async() => {
         const fetchAllUrl = process.env.NEXT_PUBLIC_PRODUCT_API_URL + "/all";
@@ -59,7 +61,7 @@ describe("Product API Testing", () => {
         });
 
         expect(response.status).toBe(401);
-    });
+    }, timeoutLimit);
 
     var idProductAdded;
 
@@ -79,7 +81,7 @@ describe("Product API Testing", () => {
         if(response.status == 201){
             idProductAdded = (await response.json())._id;
         }
-    });
+    }, timeoutLimit);
 
     test("Edit Product", async () => {
         if(idProductAdded == null){
@@ -102,7 +104,7 @@ describe("Product API Testing", () => {
         const productEdited = await response.json();
         expect(productEdited.name).toBe(editedName);
         expect(productEdited.description).toBe(insertProduct.description); //ensure only 1 field is edited
-    });
+    }, timeoutLimit);
 
     test("SUCCESS Delete Product", async () => {
         let deleteUrl = process.env.NEXT_PUBLIC_PRODUCT_API_URL+"/"+idProductAdded;
@@ -118,7 +120,7 @@ describe("Product API Testing", () => {
         });
         
         expect(response.status).toBe(200);
-    });
+    }, timeoutLimit);
 
    
     test("NOTFOUND Delete Product", async () => {
@@ -134,7 +136,7 @@ describe("Product API Testing", () => {
 
         expect(response.status).toBe(404);
 
-    });
+    }, timeoutLimit);
 
     // 65da7a70ad40419401d1ada5
 });
