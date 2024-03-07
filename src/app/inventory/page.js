@@ -206,7 +206,7 @@ export default function page() {
 
       <Dialog open={dialogOpen} onClose={closeDialog}>
         <DialogTitle>
-          Add Item
+          {formValue.name == "" ? `Add Item` : `Edit Item`}
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
