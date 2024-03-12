@@ -4,6 +4,7 @@ import { AppBar, IconButton, Toolbar, Typography, Box, Drawer, Button, List, Div
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import AcUnitIcon from '@mui/icons-material/AcUnit';
 
 import Link from "next/link";
 
@@ -13,12 +14,12 @@ export default function MyDrawer({openDrawer, setOpenDrawer}) {
     const DrawerList = (
         <Box sx={{ width: 250 }} role="presentation" onClick={() => setOpenDrawer(false)}>
           <List>
-            {['Dashboard', 'Inventory'].map((text, index) => (
+            {['Dashboard', 'Inventory', 'GraphQL'].map((text, index) => (
               <Link key={"link_"+text} href={"/"+text.toLowerCase()} tabIndex={-1}>
               <ListItem key={text} disablePadding>
                 <ListItemButton>
                   <ListItemIcon>
-                    {index == 0 ? <DashboardIcon /> : <InventoryIcon />}
+                    {index == 0 ? <DashboardIcon /> : index == 1 ? <InventoryIcon /> : <AcUnitIcon/>} 
                   </ListItemIcon>
                   <ListItemText primary={text} />
                 </ListItemButton>

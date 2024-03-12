@@ -5,6 +5,7 @@ const rolePath = {
   "/inventory":["admin", "superadmin"],
   "/dashboard":["user", "admin", "superadmin"],
   "/api/register": ["guest"],
+  "/api/graphql": ["guest"],
   "/api":["user","admin","superadmin"],
 }
 

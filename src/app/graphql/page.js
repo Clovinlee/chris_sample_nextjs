@@ -5,6 +5,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { useState, useEffect } from 'react';
 
@@ -12,11 +13,70 @@ import MyDrawer from '@/components/drawer';
 import MyAppbar from '@/components/appbar';
 import Spacer from '@/components/spacer';
 
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { DELETE_PRODUCT, EDIT_PRODUCT, GET_ALL_PRODUCTS, INSERT_PRODUCT } from './queries';
+
 export default function page() {
   const [openDrawer, setOpenDrawer] = useState(false);
+  
+  // useQuery executed immediately
+  // lazyQuery is the opposite
+  const {data: dataInventory, loading: loadingInventory, error: errorInventory, refetch:fetchProducts} = useQuery(GET_ALL_PRODUCTS); 
+  // const [fetchProducts, { data: dataInventory, loading: loadingInventory, error: errorInventory }] = useLazyQuery(GET_ALL_PRODUCTS, { fetchPolicy: 'network-only' }); // network only = able to be refetched on fetchProducts. IMPROTANT!
+  const [insertProduct, { data: dataInsertInventory, loading: loadingInsertInventory, error: errorInsertInventory }] = useMutation(INSERT_PRODUCT, {
+    onCompleted: () => {
+      setDialogOpen(false);
+      fetchProducts();
 
-  const [dataInventory, setDataInventory] = useState(null)
-  const [isLoadingInventory, setLoadingInventory] = useState(true)
+      // reset value
+      setFormValue({
+        name: '',
+        stock: "0",
+        description: '',
+        imageUrl: '',
+      })
+    }
+  });
+
+  const [editProduct, { data: dataEditProduct, loading: loadingEditProduct, error: errorEditProduct }] = useMutation(
+    EDIT_PRODUCT, {
+      onCompleted: () => {
+        setDialogOpen(false);
+        setSelectedRow(null);
+        fetchProducts();
+
+        // reset value
+        setFormValue({
+          name: '',
+          stock: 0,
+          description: '',
+          imageUrl: '',
+        })
+      }
+    }
+  )
+
+  const [deleteProduct, { data: dataDeleteProduct, loading: loadingDeleteProduct, error: errorDeleteProduct }] = useMutation(
+    DELETE_PRODUCT, {
+      onCompleted: () => {
+        setDialogDeleteOpen(false);
+        fetchProducts();
+        setSelectedRow(null);
+
+        // reset value
+        setFormValue({
+          name: '',
+          stock: 0,
+          description: '',
+          imageUrl: '',
+        })
+      }
+    }
+  )
+
+  // useEffect(() => {
+  //   fetchProducts();
+  // }, [])
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false);
@@ -37,100 +97,21 @@ export default function page() {
     });
   }
 
-  async function editProduct(){
+  async function editProductHandle(){
     if(selectedRow == null) {
       console.log("No selected row")
       return;
     }
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCT_API_URL}/${selectedRow._id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(formValue)
-    });
-
-    if(response.ok){
-      setDialogOpen(false);
-      fetchProducts();
-
-      setFormValue({
-        name: '',
-        stock: 0,
-        description: '',
-        imageUrl: '',
-      })
-
-      setSelectedRow(null);
-    }else{
-      console.log(response)
-    }
+    editProduct({variables: {id: selectedRow._id, body: formValue}});
   }
 
-  async function deleteProduct(){
+  async function deleteProductHandle(){
     if(selectedRow == null) {
       console.log("No selected row")
       return;
     }
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCT_API_URL}/${selectedRow._id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(formValue)
-    });
-
-    if(response.ok){
-      setDialogDeleteOpen(false);
-      fetchProducts();
-
-      setSelectedRow(null);
-    }
+    deleteProduct({variables: {id: selectedRow._id}});
   }
-
-  async function insertProduct() {
-    const response = await fetch(process.env.NEXT_PUBLIC_PRODUCT_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(formValue)
-    });
-
-    if (response.ok) {
-      setDialogOpen(false);
-      fetchProducts();
-
-      // reset value
-      setFormValue({
-        name: '',
-        stock: 0,
-        description: '',
-        imageUrl: '',
-      })
-    } else {
-      console.log("Error inserting product")
-    }
-  }
-
-  async function fetchProducts() {
-    setLoadingInventory(true);
-    try {
-      const response = await fetch(process.env.NEXT_PUBLIC_PRODUCT_API_URL + "/all");
-      const responseJson = await response.json();
-      setDataInventory(responseJson);
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoadingInventory(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchProducts();
-  }, [])
 
   function itemDetail(row) {
     return (
@@ -180,9 +161,9 @@ export default function page() {
     setDialogOpen(true);
     setFormValue({
       name: selectedRow.name,
-      stock: selectedRow.stock,
+      stock: String(selectedRow.stock),
       description: selectedRow.description,
-      imageUrl: selectedRow.imageUrl,
+      imageUrl: selectedRow.image,
     })
   }
 
@@ -198,7 +179,7 @@ export default function page() {
           </DialogContentText>
           <Typography variant="subtitle2" fontWeight="bold">Product: {selectedRow?.name}</Typography>
           <DialogActions>
-            <Button variant="contained" color="error" onClick={deleteProduct}>Yes</Button>
+            <Button variant="contained" color="error" onClick={deleteProductHandle}>Yes</Button>
             <Button variant="contained" color="warning" onClick={() => setDialogDeleteOpen(false)}>No</Button>
           </DialogActions>
         </DialogContent>
@@ -234,7 +215,7 @@ export default function page() {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" color={selectedRow == null ? "success" : "warning"} onClick={selectedRow == null ? insertProduct : editProduct}>
+          <Button variant="contained" color={selectedRow == null ? "success" : "warning"} onClick={selectedRow == null ? () => insertProduct({variables: {body: formValue}}) : () => editProductHandle()}>
             {selectedRow == null ?"Insert" : "Edit"}
           </Button>
           <Button onClick={closeDialog} color="info" variant="contained">
@@ -250,13 +231,19 @@ export default function page() {
         <Grid container spacing={5} sx={{ p: 3 }}>
           <Grid item xs={8}>
             <Typography variant='h5'>
-              Inventory CRUD using <b>REST API (<i>endpoints</i>) </b>
+              Inventory CRUD using <b>GraphQL</b>
             </Typography>
             <Box >
+              <Stack direction="row" mt={2}>
               <Button variant='contained' color='success' endIcon={<AddIcon />} onClick={() => setDialogOpen(true)}>
                 Add
               </Button>
-              <Spacer sy={4} />
+              <Spacer sx={2} />
+              <Button variant='contained' color='primary' endIcon={<RefreshIcon />} onClick={() => fetchProducts()}>
+                Refresh
+              </Button>
+              </Stack>
+              <Spacer sy={2} />
               <Typography variant='subtitle2'>
                 Inventory Table
               </Typography>
@@ -272,7 +259,7 @@ export default function page() {
                   </TableHead>
 
                   <TableBody>
-                    {dataInventory != null && !isLoadingInventory ? dataInventory.map((row, index) => (
+                    {dataInventory != null && !loadingInventory ? dataInventory.products.map((row, index) => (
                       <TableRow
                         onClick={() => setSelectedRow(row)}
                         key={row._id}
@@ -289,7 +276,7 @@ export default function page() {
                         <TableCell align="right">{row.price}</TableCell>
                         <TableCell align="right">{row.stock}</TableCell>
                       </TableRow>
-                    )) : dataInventory == null && !isLoadingInventory ? <TableRow>
+                    )) : dataInventory == null && !loadingInventory ? <TableRow>
                       <TableCell colSpan={3} align="center">
                         No data
                       </TableCell>

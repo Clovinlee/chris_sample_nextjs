@@ -1,10 +1,11 @@
 "use client"
 
-import { useQuery } from "@apollo/experimental-nextjs-app-support/ssr";
-import { GET_ALL_PRODUCTS } from "../graphql/queries";
+import getApolloClient from "@/db/apolloClient";
+import { ApolloProvider, useQuery } from "@apollo/client";
+import { GET_ALL_PRODUCTS } from "@/app/graphql/queries";
 
-export default function page() {
-    
+export default function TestComponent() {
+
     const {data: dataInventory, loading: loadingInventory, error: errorInventory} = useQuery(GET_ALL_PRODUCTS); // Corrected: Destructuring object keys
     return (
             <div>

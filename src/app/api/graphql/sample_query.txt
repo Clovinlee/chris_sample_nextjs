@@ -1,0 +1,49 @@
+query myQuery{
+  category(id: "65eecc295deeaa3caa88b878"){
+    products{
+      _id,
+      name
+    }
+  }
+}
+
+mutation productMutation{
+createProduct(body: {
+    name: "Sample Product",
+    stock: 100,
+    description: "This is a sample product description.",
+    imageUrl: "https://example.com/sample-image.jpg"
+  }) {
+    _id
+    name
+    stock
+    description
+    image
+  }
+}
+
+mutation editProductMutation{
+  editProduct(id: "65effb8e99371adfe362e641", body: {
+    name: "Not Sample Product",
+    stock: "10",
+    description: "This isNOT a sample product description.",
+    imageUrl: "https://examplelelelele.com/sample-image.jpg"
+  }){
+    _id,
+    name,
+    stock,
+    description,
+    image
+  }
+}
+
+mutation deleteProductMutation{
+  deleteProduct(id :"65effb8e99371adfe362e641"){
+    _id,
+    name,
+    stock,
+    description,
+    image
+  }
+}
+
