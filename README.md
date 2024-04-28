@@ -6,7 +6,7 @@ The project feature includes :
 - User Auth
 - CRUD
 - Test 
-- CI/CD *(soon to be implemented)*
+- CI (tests)
 
 
 ## Getting Started
